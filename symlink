@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e  # Exit on error
+
+DOTFILES_DIR="$(pwd)"
+CONFIG_DIR="$HOME/.config"
+
+mkdir -p "$CONFIG_DIR"
+
+valid_names=()
+
+for item in "$DOTFILES_DIR"/*; do
+    name=$(basename "$item")
+
+    # Skip unwanted files
+    [[ "$name" == ".git" || "$name" == ".vscode" || "$name" == "README.md" || "$name" == "symlink" ]] && continue
+
+    valid_names+=("$name")
+
+    target="$CONFIG_DIR/$name"
+
+    if [ -L "$target" ] && [ "$(readlink "$target")" == "$item" ]; then
+        echo "Already linked. Skipping."
+        continue
+    fi
+
+    echo "Linking $item -> $target"    
+    ln -s "$item" "$target"
+done
+
+# Clean
+
+for target in "$CONFIG_DIR"/*; do
+    name=$(basename "$target")
+
+    # Only touch symlinks
+    if [ -L "$target" ]; then
+        found=false
+
+        for valid in "${valid_names[@]}"; do
+            if [ "$name" == "$valid" ]; then
+                found=true
+                break
+            fi
+        done
+
+        if [ "$found" = false ]; then
+            echo "Removing stale symlink: $target"
+            rm "$target"
+        fi
+    fi
+done
+
+echo "Done!"
