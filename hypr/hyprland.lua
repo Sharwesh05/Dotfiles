@@ -30,4 +30,8 @@ require("Inputs.inputs")
 ---- KEYBINDINGS ----
 require("Inputs.keybind")
 
+---- RICE SHELL ----
+require("Rice.rice")
+require("Rice.colors")   -- wallpaper border colours; after Looks.look so it overrides them
+
 
